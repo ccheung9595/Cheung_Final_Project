@@ -1,30 +1,511 @@
 ---
-title: "Test"
+title: "The COVID-19 Pandemic's Disproportionate Impact In Our Region"
 author: "Chelsea Cheung"
 date: "5/10/2022"
 output: html_document
 ---
 
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Some Populations Disproportionaly Impacted By Disasters
 
-```{r cars}
-summary(cars)
+- Low-Income Individuals and Families
+- People of Color
+- Older Adults
+- People with Disabilities
+- Those with Limited English Proficiency
+
+
+## The Center for Disease Control and Prevention's Social Vulnerability Index (SVI)
+
+
+- Measures the ability to respond to and recover from disasters.
+- Provides an index between 0 and 1.
+- An SVI of 1 is considered highly vulnerable.
+- Areas with high SVI have higher levels of loss caused by disasters.
+
+
+
+<br/>
+<br/>
+
+![Hurricane Harvey](https://api.understandinghouston.org/wp-content/uploads/2020/12/uhou_risk-scaled.jpg){width=30%} ![COVID-19](https://api.understandinghouston.org/wp-content/uploads/2020/12/response_disaster-scaled.jpg){width=41%}
+
+
+
+## SVI and COVID-19 In Harris County
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.show="hold", out.width="50%"}
+setwd("C:/Users/ccheung/OneDrive - Greater Houston Community Foundation/Desktop/Chelsea - R/Final Project")
+
+
+library(leaflet)
+library(sp)
+library(rgdal)
+library(dplyr)
+library(sp)
+library(tigris)
+#library(readxl)
+
+###SVI Mapping
+
+svi_dir <- "C:/Users/ccheung/OneDrive - Greater Houston Community Foundation/Desktop/Chelsea - R/Final Project/tl_2019_48_tract.shp"
+svi <- readOGR(svi_dir, verbose = FALSE)
+new_crs <- '+init=epsg:4326'
+svi_projected <- spTransform(svi, CRS(new_crs))
+
+
+svi_data <- read.csv("SVI and COVID Data/Texas.csv")
+#svi_data <- read_excel("Texas.xls")
+svi_data <- svi_data %>% filter(RPL_THEMES != -999)
+svi_data <- svi_data %>% filter(COUNTY == "Harris")
+
+svi_merged <- geo_join(svi_projected, svi_data, "GEOID", "FIPS")
+
+svi_merged <- subset(svi_merged, !is.na(RPL_THEMES))
+
+pal <- colorNumeric("Reds", domain = svi_merged$RPL_THEMES)
+
+popup <- paste0("SVI: ", as.character(svi_merged$RPL_THEMES))
+
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(-95.3103, 29.7752, zoom = 9.45) %>%
+  addPolygons(data = svi_merged,
+              fillColor = ~pal(svi_merged$RPL_THEMES),
+              fillOpacity = 0.7,
+              weight = 0.2,
+              smoothFactor = 0.2,
+              popup = ~popup) %>%
+  addLegend(pal = pal,
+            values = svi_merged$RPL_THEMES,
+            title = "Social Vulnerability Index (SVI)")
+
+
+###COVID Mapping
+zipcode_dir <- "C:/Users/ccheung/OneDrive - Greater Houston Community Foundation/Desktop/Chelsea - R/Final Project/harris-county-tx-zipcodes.shp"
+zipcode <- readOGR(zipcode_dir, verbose = FALSE)
+zipcode_projected <- spTransform(zipcode, CRS(new_crs))
+
+COVID_cases <- read.csv("SVI and COVID Data/COVID-19 Active Cases Data by Zip Code_as of 4.24.22.csv")
+#COVID_cases <- read_excel("COVID-19 Active Cases Data by Zip Code_as of 4.24.22.xls")
+
+COVID_cases <- COVID_cases %>%
+  filter(Total.Population !=0) %>%
+  mutate(total_confirmed_rate = round((Deaths/Total.Population)*100000))
+
+
+zip_COVID_cases_merged <- geo_join(zipcode_projected, COVID_cases, "ZIP", "Zip.Code")
+
+
+bins <- seq(0, 550, by=50)
+pal2 <- colorBin("Reds", domain = zip_COVID_cases_merged$total_confirmed_rate, bins = bins)
+
+popup2 <- paste0("Zip Code: ", as.character(zip_COVID_cases_merged$ZIP), "<br/>","Total Deaths per 100,000 Residents: ", as.character(zip_COVID_cases_merged$total_confirmed_rate))
+
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(-95.3103, 29.7752, zoom = 9.45) %>%
+  addPolygons(data = zip_COVID_cases_merged,
+              fillColor = ~pal2(zip_COVID_cases_merged$total_confirmed_rate),
+              fillOpacity = 0.7,
+              weight = 0.2,
+              smoothFactor = 0.2,
+              popup = ~popup2) %>%
+  addLegend(pal = pal2,
+            values = zip_COVID_cases_merged$total_confirmed_rate,
+            title = "Total COVID Deaths per 100,000 Residents")
+
+
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+## Variables That Make Up SVI
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+- Below Poverty Level
+- Unemployed
+- <p style ="color:red">No High School Diploma</p>
+- Aged 65 or Older
+- Aged 17 or Younger
+- <p style ="color:red">Income</p>
+- Older Than Age 5 with a Disability
+- Single-Parent Households
+- Minority
+- Speak English "Less Than Well"
+- Multi-Unit Structures
+- Mobile Homes
+- Crowding
+- No Vehicles
+- Group Quarters
+
+
+## U.S. Census Bureau's Household Pulse Survey
+
+
+- Austin
+- Brazoria
+- Chambers
+- Fort Bend
+- Galveston
+- Harris
+- Liberty
+- Montgomery
+- Waller
+
+<br/>
+<br/>
+
+- Financial Impacts - loss of employment income since March 13, 2020
+- Food Insufficiency - often not enough to eat in the last 7 days
+- Housing Insecurity - no confidence in ability to pay next month's rent or mortgage on time
+- Mental Health Impacts - feeling nervous, anxious or on edge nearly every day the past week
+
+
+## Financial Impacts: Someone in household has experienced a loss of employment income since March 13, 2020 by demographics.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=18, fig.height=4}
+library(ggplot2)
+library(dplyr)
+
+L <- list.files(".", ".csv")
+
+
+###EDUCATION
+dates <- c(replicate(7, "April 23-May 5"), replicate(7, "May 7-12"), replicate(7, "May 14-19"), replicate(7, "May 21-26"), replicate(7, "May 28-June 2"), replicate(7, "June 4-9"), replicate(7, "June 11-16"), replicate(7, "June 18-23"), replicate(7, "June 25-30"), replicate(7, "July 2-7"), replicate(7, "July 9-14"), replicate(7, "July 16-21"), replicate(7, "August 19-31"), replicate(7, "September 2-14"), replicate(7, "September 16-28"), replicate(7, "September 30-October 12"), replicate(7, "October14-26"), replicate(7, "October 28-November 9"), replicate(7, "November 11-23"), replicate(7, "November 25-December 7"), replicate(7, "December 9-21"))
+
+education <- c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree")
+
+Financial_Ed <- lapply(L, function(x){
+  DF <- read.csv(x)
+  filter(DF, EST_MSA == 26420)
+  df <- data.frame(matrix(ncol = 1, nrow = 7))
+  colnames(df) <- c("Percent Loss")
+    j <-1
+    while(j < 8){
+      DF_ed <- filter(DF, EEDUC == j)
+      DFYes <- filter(DF_ed, WRKLOSS == 1)
+      DFTotal <- filter(DF_ed, WRKLOSS > 0)
+      DFYesWeighted <- sum(DFYes$PWEIGHT)
+      DFTotalWeighted <- sum(DFTotal$PWEIGHT)
+      Percent <- (DFYesWeighted/DFTotalWeighted)*100
+      df[j,1] <- Percent
+      j <- j + 1
+    }
+    return(df)
+})
+
+Percent_Financial_Ed <- unlist(Financial_Ed)
+Percent_Financial_Ed <- as.data.frame(Percent_Financial_Ed)
+Percent_Financial_Ed$Date <- dates
+Percent_Financial_Ed$Education <- education
+
+Percent_Financial_Ed$Education <- factor(Percent_Financial_Ed$Education, levels = c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree"))
+
+ggplot(Percent_Financial_Ed, aes(x=Date, y=Percent_Financial_Ed, group=Education)) + geom_line(aes(color=Education)) + geom_point(aes(color=Education)) + labs(title = "Percent someone in household has experienced a loss of employment income since March 13, 2020 by educational attainment", x = "Date (April 2020 - December 2020)", y = " ")
+
+
+###INCOME
+dates <- c(replicate(8, "April 23-May 5"), replicate(8, "May 7-12"), replicate(8, "May 14-19"), replicate(8, "May 21-26"), replicate(8, "May 28-June 2"), replicate(8, "June 4-9"), replicate(8, "June 11-16"), replicate(8, "June 18-23"), replicate(8, "June 25-30"), replicate(8, "July 2-7"), replicate(8, "July 9-14"), replicate(8, "July 16-21"), replicate(8, "August 19-31"), replicate(8, "September 2-14"), replicate(8, "September 16-28"), replicate(8, "September 30-October 12"), replicate(8, "October14-26"), replicate(8, "October 28-November 9"), replicate(8, "November 11-23"), replicate(8, "November 25-December 7"), replicate(8, "December 9-21"))
+
+incomes <- c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above")
+
+##Financial Impacts
+##Experienced Loss of Employment Income Since March 13, 2020 by Income
+Loss_Employment_Income_All <- lapply(L, function(x){
+  DF <- read.csv(x)
+  filter(DF, EST_MSA == 26420)
+  filter(DF, INCOME > 0)
+  df <- data.frame(matrix(ncol = 1, nrow = 8))
+  colnames(df) <- c("Percent Loss")
+    j <-1
+    while(j < 9){
+      DF_income <- filter(DF, INCOME == j)
+      DFYes <- filter(DF_income, WRKLOSS == 1)
+      DFTotal <- filter(DF_income, WRKLOSS > 0)
+      DFYesWeighted <- sum(DFYes$PWEIGHT)
+      DFTotalWeighted <- sum(DFTotal$PWEIGHT)
+      Percent <- (DFYesWeighted/DFTotalWeighted)*100
+      df[j,1] <- Percent
+      j <- j + 1
+    }
+    return(df)
+})
+
+Percent_Loss <- unlist(Loss_Employment_Income_All)
+Percent_Loss <- as.data.frame(Percent_Loss)
+Percent_Loss$Date <- dates
+Percent_Loss$Income <- incomes
+
+Percent_Loss$Income <- factor(Percent_Loss$Income, levels = c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above"))
+
+
+ggplot(Percent_Loss, aes(x=Date, y=Percent_Loss, group=Income)) + geom_line(aes(color=Income)) + geom_point(aes(color=Income)) + labs(title = "Percent someone in household has experienced a loss of employment income since March 13, 2020 by income", x = "Date (April 2020 - December 2020)", y = " ")
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+## Food Insufficiency: Often not enough to eat in the lat 7 days by demographics.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=18, fig.height=4}
+library(ggplot2)
+library(dplyr)
+
+L <- list.files(".", ".csv")
+
+###EDUCATION
+dates <- c(replicate(7, "April 23-May 5"), replicate(7, "May 7-12"), replicate(7, "May 14-19"), replicate(7, "May 21-26"), replicate(7, "May 28-June 2"), replicate(7, "June 4-9"), replicate(7, "June 11-16"), replicate(7, "June 18-23"), replicate(7, "June 25-30"), replicate(7, "July 2-7"), replicate(7, "July 9-14"), replicate(7, "July 16-21"), replicate(7, "August 19-31"), replicate(7, "September 2-14"), replicate(7, "September 16-28"), replicate(7, "September 30-October 12"), replicate(7, "October14-26"), replicate(7, "October 28-November 9"), replicate(7, "November 11-23"), replicate(7, "November 25-December 7"), replicate(7, "December 9-21"))
+
+education <- c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree")
+
+Food_Sufficiency_ed <- lapply(L, function(x){
+  DF <- read.csv(x)
+  filter(DF, EST_MSA == 26420)
+  df <- data.frame(matrix(ncol = 1, nrow = 7))
+  colnames(df) <- c("Percent Often Not Enough To Eat")
+    j <-1
+    while(j < 8){
+      DF_ed <- filter(DF, EEDUC == j)
+      DFYes <- filter(DF_ed, CURFOODSUF == 4)
+      DFTotal <- filter(DF_ed, CURFOODSUF > 0)
+      DFYesWeighted <- sum(DFYes$PWEIGHT)
+      DFTotalWeighted <- sum(DFTotal$PWEIGHT)
+      Percent <- (DFYesWeighted/DFTotalWeighted)*100
+      df[j,1] <- Percent
+      j <- j + 1
+    }
+    return(df)
+})
+
+Percent_Food_Sufficiency_ed <- unlist(Food_Sufficiency_ed)
+Percent_Food_Sufficiency_ed <- as.data.frame(Percent_Food_Sufficiency_ed)
+Percent_Food_Sufficiency_ed$Date <- dates
+Percent_Food_Sufficiency_ed$Education <- education
+
+Percent_Food_Sufficiency_ed$Education <- factor(Percent_Food_Sufficiency_ed$Education, levels = c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree"))
+
+
+ggplot(Percent_Food_Sufficiency_ed, aes(x=Date, y=Percent_Food_Sufficiency_ed, group=Education)) + geom_line(aes(color=Education)) + geom_point(aes(color=Education)) + labs(title = "Percent often not enough to eat in the lat 7 days by education", x = "Date (April 2020 - December 2020)", y = " ")
+
+##INCOME
+dates <- c(replicate(8, "April 23-May 5"), replicate(8, "May 7-12"), replicate(8, "May 14-19"), replicate(8, "May 21-26"), replicate(8, "May 28-June 2"), replicate(8, "June 4-9"), replicate(8, "June 11-16"), replicate(8, "June 18-23"), replicate(8, "June 25-30"), replicate(8, "July 2-7"), replicate(8, "July 9-14"), replicate(8, "July 16-21"), replicate(8, "August 19-31"), replicate(8, "September 2-14"), replicate(8, "September 16-28"), replicate(8, "September 30-October 12"), replicate(8, "October14-26"), replicate(8, "October 28-November 9"), replicate(8, "November 11-23"), replicate(8, "November 25-December 7"), replicate(8, "December 9-21"))
+
+incomes <- c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above")
+
+Food_Sufficiency <- lapply(L, function(x){
+  DF <- read.csv(x)
+  filter(DF, EST_MSA == 26420)
+  filter(DF, INCOME > 0)
+  df <- data.frame(matrix(ncol = 1, nrow = 8))
+  colnames(df) <- c("Percent Often Not Enough To Eat")
+    j <-1
+    while(j < 9){
+      DF_income <- filter(DF, INCOME == j)
+      DFYes <- filter(DF_income, CURFOODSUF == 4)
+      DFTotal <- filter(DF_income, CURFOODSUF > 0)
+      DFYesWeighted <- sum(DFYes$PWEIGHT)
+      DFTotalWeighted <- sum(DFTotal$PWEIGHT)
+      Percent <- (DFYesWeighted/DFTotalWeighted)*100
+      df[j,1] <- Percent
+      j <- j + 1
+    }
+    return(df)
+})
+
+Percent_Food_Sufficiency <- unlist(Food_Sufficiency)
+Percent_Food_Sufficiency <- as.data.frame(Percent_Food_Sufficiency)
+Percent_Food_Sufficiency$Date <- dates
+Percent_Food_Sufficiency$Income <- incomes
+
+Percent_Food_Sufficiency$Income <- factor(Percent_Food_Sufficiency$Income, levels = c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above"))
+
+
+ggplot(Percent_Food_Sufficiency, aes(x=Date, y=Percent_Food_Sufficiency, group=Income)) + geom_line(aes(color=Income)) + geom_point(aes(color=Income)) + labs(title = "Percent often not enough to eat in the last 7 days by iIncome", x = "Date (April 2020 - December 2020)", y = " ")
+
+```
+
+
+
+
+## Housing Insecurity: No confidence in the ability to pay next month's mortgage or rent by demographics.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=18, fig.height=4}
+library(ggplot2)
+library(dplyr)
+
+L <- list.files(".", ".csv")
+
+###EDUCATION
+dates <- c(replicate(7, "April 23-May 5"), replicate(7, "May 7-12"), replicate(7, "May 14-19"), replicate(7, "May 21-26"), replicate(7, "May 28-June 2"), replicate(7, "June 4-9"), replicate(7, "June 11-16"), replicate(7, "June 18-23"), replicate(7, "June 25-30"), replicate(7, "July 2-7"), replicate(7, "July 9-14"), replicate(7, "July 16-21"), replicate(7, "August 19-31"), replicate(7, "September 2-14"), replicate(7, "September 16-28"), replicate(7, "September 30-October 12"), replicate(7, "October14-26"), replicate(7, "October 28-November 9"), replicate(7, "November 11-23"), replicate(7, "November 25-December 7"), replicate(7, "December 9-21"))
+
+education <- c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree")
+
+Housing_ed <- lapply(L, function(x){
+  DF <- read.csv(x)
+  filter(DF, EST_MSA == 26420)
+  df <- data.frame(matrix(ncol = 1, nrow = 7))
+  colnames(df) <- c("No Confidence Housing")
+    j <-1
+    while(j < 8){
+      DF_ed <- filter(DF, EEDUC == j)
+      DFYes <- filter(DF_ed, MORTCONF == 1)
+      DFTotal <- filter(DF_ed, MORTCONF > 0)
+      DFYesWeighted <- sum(DFYes$PWEIGHT)
+      DFTotalWeighted <- sum(DFTotal$PWEIGHT)
+      Percent <- (DFYesWeighted/DFTotalWeighted)*100
+      df[j,1] <- Percent
+      j <- j + 1
+    }
+    return(df)
+})
+
+Percent_Housing_ed <- unlist(Housing_ed)
+Percent_Housing_ed<- as.data.frame(Percent_Housing_ed)
+Percent_Housing_ed$Date <- dates
+Percent_Housing_ed$Education <- education
+
+Percent_Housing_ed$Education <- factor(Percent_Housing_ed$Education, levels = c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree"))
+
+
+ggplot(Percent_Housing_ed, aes(x=Date, y=Percent_Housing_ed, group=Education)) + geom_line(aes(color=Education)) + geom_point(aes(color=Education)) + labs(title = "Percent no confidence in ability to pay next month's mortgage or rent by education", x = "Date (April 2020 - December 2020)", y = " ")
+
+###INCOME
+dates <- c(replicate(8, "April 23-May 5"), replicate(8, "May 7-12"), replicate(8, "May 14-19"), replicate(8, "May 21-26"), replicate(8, "May 28-June 2"), replicate(8, "June 4-9"), replicate(8, "June 11-16"), replicate(8, "June 18-23"), replicate(8, "June 25-30"), replicate(8, "July 2-7"), replicate(8, "July 9-14"), replicate(8, "July 16-21"), replicate(8, "August 19-31"), replicate(8, "September 2-14"), replicate(8, "September 16-28"), replicate(8, "September 30-October 12"), replicate(8, "October14-26"), replicate(8, "October 28-November 9"), replicate(8, "November 11-23"), replicate(8, "November 25-December 7"), replicate(8, "December 9-21"))
+
+incomes <- c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above")
+
+Housing <- lapply(L, function(x){
+  DF <- read.csv(x)
+  filter(DF, EST_MSA == 26420)
+  filter(DF, INCOME > 0)
+  df <- data.frame(matrix(ncol = 1, nrow = 8))
+  colnames(df) <- c("No Confidence Housing")
+    j <-1
+    while(j < 9){
+      DF_income <- filter(DF, INCOME == j)
+      DFYes <- filter(DF_income, MORTCONF == 1)
+      DFTotal <- filter(DF_income, MORTCONF > 0)
+      DFYesWeighted <- sum(DFYes$PWEIGHT)
+      DFTotalWeighted <- sum(DFTotal$PWEIGHT)
+      Percent <- (DFYesWeighted/DFTotalWeighted)*100
+      df[j,1] <- Percent
+      j <- j + 1
+    }
+    return(df)
+})
+
+Percent_Housing <- unlist(Housing)
+Percent_Housing<- as.data.frame(Percent_Housing)
+Percent_Housing$Date <- dates
+Percent_Housing$Income <- incomes
+
+Percent_Housing$Income <- factor(Percent_Housing$Income, levels = c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $199,999", "$150,000 - $149,999", "$200,000 and Above"))
+
+
+ggplot(Percent_Housing, aes(x=Date, y=Percent_Housing, group=Income)) + geom_line(aes(color=Income)) + geom_point(aes(color=Income)) + labs(title = "Percent no confidence in ability to pay next month's mortgage or rent by income", x = "Date (April 2020 - December 2020)", y = " ")
+
+```
+
+
+## Mental Health Impacts: Feeling nervous, anxious, or on edge nearly every day for the last 7 days by demographics.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=18, fig.height=4}
+library(ggplot2)
+library(dplyr)
+
+L <- list.files(".", ".csv")
+
+
+###EDUCATION
+dates <- c(replicate(7, "April 23-May 5"), replicate(7, "May 7-12"), replicate(7, "May 14-19"), replicate(7, "May 21-26"), replicate(7, "May 28-June 2"), replicate(7, "June 4-9"), replicate(7, "June 11-16"), replicate(7, "June 18-23"), replicate(7, "June 25-30"), replicate(7, "July 2-7"), replicate(7, "July 9-14"), replicate(7, "July 16-21"), replicate(7, "August 19-31"), replicate(7, "September 2-14"), replicate(7, "September 16-28"), replicate(7, "September 30-October 12"), replicate(7, "October14-26"), replicate(7, "October 28-November 9"), replicate(7, "November 11-23"), replicate(7, "November 25-December 7"), replicate(7, "December 9-21"))
+
+education <- c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree")
+
+Anxious_ed <- lapply(L, function(x){
+  DF <- read.csv(x)
+  filter(DF, EST_MSA == 26420)
+  df <- data.frame(matrix(ncol = 1, nrow = 7))
+  colnames(df) <- c("Anxious")
+    j <-1
+    while(j < 8){
+      DF_ed <- filter(DF, EEDUC == j)
+      DFYes <- filter(DF_ed, ANXIOUS == 4)
+      DFTotal <- filter(DF_ed, ANXIOUS > 0)
+      DFYesWeighted <- sum(DFYes$PWEIGHT)
+      DFTotalWeighted <- sum(DFTotal$PWEIGHT)
+      Percent <- (DFYesWeighted/DFTotalWeighted)*100
+      df[j,1] <- Percent
+      j <- j + 1
+    }
+    return(df)
+})
+
+Percent_Anxious_ed <- unlist(Anxious_ed)
+Percent_Anxious_ed<- as.data.frame(Percent_Anxious_ed)
+Percent_Anxious_ed$Date <- dates
+Percent_Anxious_ed$Education <- education
+
+Percent_Anxious_ed$Education <- factor(Percent_Anxious_ed$Education, levels = c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree"))
+
+
+ggplot(Percent_Anxious_ed, aes(x=Date, y=Percent_Anxious_ed, group=Education)) + geom_line(aes(color=Education)) + geom_point(aes(color=Education)) + labs(title = "Percent feeling nervous, anxious, or on edge nearly every day for the last 7 days by education", x = "Date (April 2020 - December 2020)", y = " ")
+
+###INCOME
+dates <- c(replicate(8, "April 23-May 5"), replicate(8, "May 7-12"), replicate(8, "May 14-19"), replicate(8, "May 21-26"), replicate(8, "May 28-June 2"), replicate(8, "June 4-9"), replicate(8, "June 11-16"), replicate(8, "June 18-23"), replicate(8, "June 25-30"), replicate(8, "July 2-7"), replicate(8, "July 9-14"), replicate(8, "July 16-21"), replicate(8, "August 19-31"), replicate(8, "September 2-14"), replicate(8, "September 16-28"), replicate(8, "September 30-October 12"), replicate(8, "October14-26"), replicate(8, "October 28-November 9"), replicate(8, "November 11-23"), replicate(8, "November 25-December 7"), replicate(8, "December 9-21"))
+
+incomes <- c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above")
+
+Anxious <- lapply(L, function(x){
+  DF <- read.csv(x)
+  filter(DF, EST_MSA == 26420)
+  filter(DF, INCOME > 0)
+  df <- data.frame(matrix(ncol = 1, nrow = 8))
+  colnames(df) <- c("Anxious")
+    j <-1
+    while(j < 9){
+      DF_income <- filter(DF, INCOME == j)
+      DFYes <- filter(DF_income, ANXIOUS == 4)
+      DFTotal <- filter(DF_income, ANXIOUS > 0)
+      DFYesWeighted <- sum(DFYes$PWEIGHT)
+      DFTotalWeighted <- sum(DFTotal$PWEIGHT)
+      Percent <- (DFYesWeighted/DFTotalWeighted)*100
+      df[j,1] <- Percent
+      j <- j + 1
+    }
+    return(df)
+})
+
+Percent_Anxious <- unlist(Anxious)
+Percent_Anxious<- as.data.frame(Percent_Anxious)
+Percent_Anxious$Date <- dates
+Percent_Anxious$Income <- incomes
+
+Percent_Anxious$Income <- factor(Percent_Anxious$Income, levels = c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above"))
+
+
+ggplot(Percent_Anxious, aes(x=Date, y=Percent_Anxious, group=Income)) + geom_line(aes(color=Income)) + geom_point(aes(color=Income)) + labs(title = "Percent Feeling nervous, anxious, or on edge nearly every day for the last 7 days by income", x = "Date (April 2020 - December 2020)", y = " ")
+
+
+```
+
+
+## Has COVID-19 Had A Disproportionate Impact In Our Region?
+
+- Given the limited scope - somewhat
+- Of the two SVI characteristics looked at individuals with less education and lower income had disproportionate experiences with:
+  - Employment income loss
+  - Food Insufficiency
+  - Housing Insecurity
+  - Feelings of Anxiousness
+- High SVI areas tend to have higher rates of COVID-19 deaths
+
+
+
