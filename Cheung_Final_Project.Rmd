@@ -5,14 +5,22 @@ date: "5/10/2022"
 output: html_document
 ---
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
+<br/>
+
+Disasters are only increasing in frequency and severity. The Federal Emergency Management Agency, or better known as FEMA, has declared a disaster in Greater Houston 26 times in the past 41 years with nearly a third of those occurring in the last 6 years. In Houston we are certainly not unaccustomed to natural disasters such as hurricanes, flooding and the occasional tornado. 
+
+And there are a number of studies showing that these types of disasters consistently have a greater negative impact on some members of our community. 
+
+![Disasters In Greater Houston](https://api.understandinghouston.org/wp-content/uploads/2021/03/01-history-of-flooding-big-2021@2x-scaled.jpg)
 
 
-## Some Populations Disproportionaly Impacted By Disasters
+# Some Are Populations Disproportionaly Impacted By Disasters
+
+Research has shown that certain populations are disproportionately impacted by disasters such as:
 
 - Low-Income Individuals and Families
 - People of Color
@@ -20,14 +28,18 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 - People with Disabilities
 - Those with Limited English Proficiency
 
+The COVID-19 pandemic has been unlike any other disaster we have experienced in our lifetimes. Yet, emerging research has shown that nationally, and globally, this disaster, like all other disasters, has disproportionately affected these same populations in many ways – financially, physically, emotionally, and more – and is predicted to have the same uneven, lingering effects well after this disaster passes.
+Taking a look at just some of the data available on the impact of COVID-19 in the Houston area, does our region mirror these same trends?
 
-## The Center for Disease Control and Prevention's Social Vulnerability Index (SVI)
+
+# The Center for Disease Control and Prevention's Social Vulnerability Index (SVI)
 
 
-- Measures the ability to respond to and recover from disasters.
-- Provides an index between 0 and 1.
-- An SVI of 1 is considered highly vulnerable.
-- Areas with high SVI have higher levels of loss caused by disasters.
+
+The first thing we’ll look at to try to answer this question is the Center for Disease Control and Prevention’s Social Vulnerability Index, otherwise known as SVI. 
+This index is a composite measure of 15 different characteristics that research has shown impact a community’s ability to respond to and recover from disasters. 
+Areas with an SVI closer to 1 are considered highly vulnerable to the negative effects of disasters and typically report impacts from disasters that are more severe than areas with an SVI closer to 0. 
+Research has shown that areas with a high SVI tend to have higher levels of human and economic suffering and loss caused by disasters.
 
 
 
@@ -36,13 +48,21 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 ![Hurricane Harvey](https://api.understandinghouston.org/wp-content/uploads/2020/12/uhou_risk-scaled.jpg){width=30%} ![COVID-19](https://api.understandinghouston.org/wp-content/uploads/2020/12/response_disaster-scaled.jpg){width=41%}
 
-
-
 ## SVI and COVID-19 In Harris County
+
+The top map shows the SVI by census tract for Harris County with the lighter color showing areas with a low SVI and the darker color showing areas with a high SVI.
+
+We see on the west end of Houston within the 610 loop an area of low SVI which is sometimes referred to as the "arrow of prosperity". In this general region there is typically a wealth of resources allowing these communities to thrive and, hence, be less impacted by disasters which is why we see a concentration of lighter colors. Most likely unsurprisingly we see a greater concentration of dark colors, denoting high SVI areas, around the east end of Houston and Harris County.
+
+The bottom map shows the rate of COVID-19 deaths by zip code. With the lighter colors showing a lower rate of COVID-19 deaths and the darker colors showing a higher rate of COVID-19 deaths. We see a somewhat similar pattern here with the "arrow of prosperity" seeing less of an impact in terms the rate of residents dying from COVID and this east side of Houston experiencing a higher rate of COVID-19 deaths.
+
+This is not a perfect one-to-one representation as it’s comparing a much larger geographic area of zip codes to a much smaller geographic area of census tracts but it does help to paint the picture that communities with a high SVI, overall, seem to have higher rates of COVID-19 deaths. 
+
+Now that we’ve looked at SVI overall and just one example of the disproportionate impact of COVID-19 in our region, we’re going to delve just a little bit into those 15 characteristics that were mentioned earlier that make up SVI.
+
 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.show="hold", out.width="50%"}
-setwd("C:/Users/ccheung/OneDrive - Greater Houston Community Foundation/Desktop/Chelsea - R/Final Project")
 
 
 library(leaflet)
@@ -51,18 +71,16 @@ library(rgdal)
 library(dplyr)
 library(sp)
 library(tigris)
-#library(readxl)
 
 ###SVI Mapping
 
-svi_dir <- "C:/Users/ccheung/OneDrive - Greater Houston Community Foundation/Desktop/Chelsea - R/Final Project/tl_2019_48_tract.shp"
+svi_dir <- "COVID Maps/tl_2019_48_tract.shp"
 svi <- readOGR(svi_dir, verbose = FALSE)
 new_crs <- '+init=epsg:4326'
 svi_projected <- spTransform(svi, CRS(new_crs))
 
 
-svi_data <- read.csv("SVI and COVID Data/Texas.csv")
-#svi_data <- read_excel("Texas.xls")
+svi_data <- read.csv("COVID Maps/Texas.csv")
 svi_data <- svi_data %>% filter(RPL_THEMES != -999)
 svi_data <- svi_data %>% filter(COUNTY == "Harris")
 
@@ -89,12 +107,11 @@ leaflet() %>%
 
 
 ###COVID Mapping
-zipcode_dir <- "C:/Users/ccheung/OneDrive - Greater Houston Community Foundation/Desktop/Chelsea - R/Final Project/harris-county-tx-zipcodes.shp"
+zipcode_dir <- "COVID Maps/harris-county-tx-zipcodes.shp"
 zipcode <- readOGR(zipcode_dir, verbose = FALSE)
 zipcode_projected <- spTransform(zipcode, CRS(new_crs))
 
-COVID_cases <- read.csv("SVI and COVID Data/COVID-19 Active Cases Data by Zip Code_as of 4.24.22.csv")
-#COVID_cases <- read_excel("COVID-19 Active Cases Data by Zip Code_as of 4.24.22.xls")
+COVID_cases <- read.csv("COVID Maps/COVID-19 Active Cases Data by Zip Code_as of 4.24.22.csv")
 
 COVID_cases <- COVID_cases %>%
   filter(Total.Population !=0) %>%
@@ -126,40 +143,20 @@ leaflet() %>%
 ```
 
 
-## Variables That Make Up SVI
+# Variables That Make Up SVI
 
-- Below Poverty Level
-- Unemployed
-- <p style ="color:red">No High School Diploma</p>
-- Aged 65 or Older
-- Aged 17 or Younger
-- <p style ="color:red">Income</p>
-- Older Than Age 5 with a Disability
-- Single-Parent Households
-- Minority
-- Speak English "Less Than Well"
-- Multi-Unit Structures
-- Mobile Homes
-- Crowding
-- No Vehicles
-- Group Quarters
+As mentioned previously, the CDC’s SVI is a composite measure of 15 different characteristics research has shown impacts a community’s ability to respond to and recover from disasters. Today we’re only going to look at education and income specifically to see if individuals with less education and household income experienced more severe impacts in certain quality of life areas between April 2020 and December 2020.
 
+![Characteristics of SVI](https://api.understandinghouston.org/wp-content/uploads/2020/12/img-Vulnerability-Impact@2x.png)
 
-## U.S. Census Bureau's Household Pulse Survey
+# U.S. Census Bureau's Household Pulse Survey
 
+We are going to take these two characteristics and use them to disaggregate data from the U.S. Census Bureau’s Household Pulse Survey. All Household Pulse Survey data presented for our region is at the Houston Metropolitan Statistical Area level – a statistical region that includes nine counties in our region.
 
-- Austin
-- Brazoria
-- Chambers
-- Fort Bend
-- Galveston
-- Harris
-- Liberty
-- Montgomery
-- Waller
+The US Census Bureau began administering this survey in April 2020 and it was created to assess how the COVID-19 pandemic is impacting households and individuals from a social and economic perspective.
 
-<br/>
-<br/>
+The four topics from this survey we are going to look at today are:
+
 
 - Financial Impacts - loss of employment income since March 13, 2020
 - Food Insufficiency - often not enough to eat in the last 7 days
@@ -167,7 +164,12 @@ leaflet() %>%
 - Mental Health Impacts - feeling nervous, anxious or on edge nearly every day the past week
 
 
-## Financial Impacts: Someone in household has experienced a loss of employment income since March 13, 2020 by demographics.
+# Financial Impacts: Someone in household has experienced a loss of employment income since March 13, 2020 by demographics.
+
+On average for the time period being measured, 60% of individuals in the Houston area with less than a high school diploma experienced someone in their household losing employment income since March 13, 2020 compared to 39% of individuals with at least a bachelor’s degree.
+
+Looking at this same question but for household income, 57% of individuals with household incomes of $25,000 or less experienced loss of household employment income compared to 39% with household incomes of $75,000 or more.
+
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=18, fig.height=4}
 library(ggplot2)
@@ -177,7 +179,7 @@ L <- list.files(".", ".csv")
 
 
 ###EDUCATION
-dates <- c(replicate(7, "April 23-May 5"), replicate(7, "May 7-12"), replicate(7, "May 14-19"), replicate(7, "May 21-26"), replicate(7, "May 28-June 2"), replicate(7, "June 4-9"), replicate(7, "June 11-16"), replicate(7, "June 18-23"), replicate(7, "June 25-30"), replicate(7, "July 2-7"), replicate(7, "July 9-14"), replicate(7, "July 16-21"), replicate(7, "August 19-31"), replicate(7, "September 2-14"), replicate(7, "September 16-28"), replicate(7, "September 30-October 12"), replicate(7, "October14-26"), replicate(7, "October 28-November 9"), replicate(7, "November 11-23"), replicate(7, "November 25-December 7"), replicate(7, "December 9-21"))
+dates <- c(replicate(7, "Week 01"), replicate(7, "Week 02"), replicate(7, "Week 03"), replicate(7, "Week 04"), replicate(7, "Week 05"), replicate(7, "Week 06"), replicate(7, "Week 07"), replicate(7, "Week 08"), replicate(7, "Week 09"), replicate(7, "Week 10"), replicate(7, "Week 11"), replicate(7, "Week 12"), replicate(7, "Week 13"), replicate(7, "Week 14"), replicate(7, "Week 15"), replicate(7, "Week 16"), replicate(7, "Week 17"), replicate(7, "Week 18"), replicate(7, "Week 19"), replicate(7, "Week 20"), replicate(7, "Week 21"))
 
 education <- c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree")
 
@@ -211,7 +213,8 @@ ggplot(Percent_Financial_Ed, aes(x=Date, y=Percent_Financial_Ed, group=Education
 
 
 ###INCOME
-dates <- c(replicate(8, "April 23-May 5"), replicate(8, "May 7-12"), replicate(8, "May 14-19"), replicate(8, "May 21-26"), replicate(8, "May 28-June 2"), replicate(8, "June 4-9"), replicate(8, "June 11-16"), replicate(8, "June 18-23"), replicate(8, "June 25-30"), replicate(8, "July 2-7"), replicate(8, "July 9-14"), replicate(8, "July 16-21"), replicate(8, "August 19-31"), replicate(8, "September 2-14"), replicate(8, "September 16-28"), replicate(8, "September 30-October 12"), replicate(8, "October14-26"), replicate(8, "October 28-November 9"), replicate(8, "November 11-23"), replicate(8, "November 25-December 7"), replicate(8, "December 9-21"))
+dates <- c(replicate(8, "Week 01"), replicate(8, "Week 02"), replicate(8, "Week 03"), replicate(8, "Week 04"), replicate(8, "Week 05"), replicate(8, "Week 06"), replicate(8, "Week 07"), replicate(8, "Week 08"), replicate(8, "Week 09"), replicate(8, "Week 10"), replicate(8, "Week 11"), replicate(8, "Week 12"), replicate(8, "Week 13"), replicate(8, "Week 14"), replicate(8, "Week 15"), replicate(8, "Week 16"), replicate(8, "Week 17"), replicate(8, "Week 18"), replicate(8, "Week 19"), replicate(8, "Week 20"), replicate(8, "Week 21"))
+
 
 incomes <- c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above")
 
@@ -247,13 +250,20 @@ Percent_Loss$Income <- factor(Percent_Loss$Income, levels = c("Less than $25,000
 
 ggplot(Percent_Loss, aes(x=Date, y=Percent_Loss, group=Income)) + geom_line(aes(color=Income)) + geom_point(aes(color=Income)) + labs(title = "Percent someone in household has experienced a loss of employment income since March 13, 2020 by income", x = "Date (April 2020 - December 2020)", y = " ")
 
+
 ```
 
 
 
 
 
-## Food Insufficiency: Often not enough to eat in the lat 7 days by demographics.
+## Food Insufficiency: Often not enough to eat in the last 7 days by demographics.
+
+Looking at individuals in our area who reported often not having enough to eat in the last 7 days, on average between April and December 2020, 9% with less than a high school diploma often did not have enough to eat compared to 1% of those with at least a Bachelor’s degree
+
+Disaggregating by income, less than 1% of those with a household income of more than $75,000 reported often not having enough to eat compared to 7% of those with a household income less than $25,000
+
+
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=18, fig.height=4}
 library(ggplot2)
@@ -262,7 +272,7 @@ library(dplyr)
 L <- list.files(".", ".csv")
 
 ###EDUCATION
-dates <- c(replicate(7, "April 23-May 5"), replicate(7, "May 7-12"), replicate(7, "May 14-19"), replicate(7, "May 21-26"), replicate(7, "May 28-June 2"), replicate(7, "June 4-9"), replicate(7, "June 11-16"), replicate(7, "June 18-23"), replicate(7, "June 25-30"), replicate(7, "July 2-7"), replicate(7, "July 9-14"), replicate(7, "July 16-21"), replicate(7, "August 19-31"), replicate(7, "September 2-14"), replicate(7, "September 16-28"), replicate(7, "September 30-October 12"), replicate(7, "October14-26"), replicate(7, "October 28-November 9"), replicate(7, "November 11-23"), replicate(7, "November 25-December 7"), replicate(7, "December 9-21"))
+dates <- c(replicate(7, "Week 01"), replicate(7, "Week 02"), replicate(7, "Week 03"), replicate(7, "Week 04"), replicate(7, "Week 05"), replicate(7, "Week 06"), replicate(7, "Week 07"), replicate(7, "Week 08"), replicate(7, "Week 09"), replicate(7, "Week 10"), replicate(7, "Week 11"), replicate(7, "Week 12"), replicate(7, "Week 13"), replicate(7, "Week 14"), replicate(7, "Week 15"), replicate(7, "Week 16"), replicate(7, "Week 17"), replicate(7, "Week 18"), replicate(7, "Week 19"), replicate(7, "Week 20"), replicate(7, "Week 21"))
 
 education <- c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree")
 
@@ -293,10 +303,10 @@ Percent_Food_Sufficiency_ed$Education <- education
 Percent_Food_Sufficiency_ed$Education <- factor(Percent_Food_Sufficiency_ed$Education, levels = c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree"))
 
 
-ggplot(Percent_Food_Sufficiency_ed, aes(x=Date, y=Percent_Food_Sufficiency_ed, group=Education)) + geom_line(aes(color=Education)) + geom_point(aes(color=Education)) + labs(title = "Percent often not enough to eat in the lat 7 days by education", x = "Date (April 2020 - December 2020)", y = " ")
+ggplot(Percent_Food_Sufficiency_ed, aes(x=Date, y=Percent_Food_Sufficiency_ed, group=Education)) + geom_line(aes(color=Education)) + geom_point(aes(color=Education)) + labs(title = "Percent often not enough to eat in the last 7 days by education", x = "Date (April 2020 - December 2020)", y = " ")
 
 ##INCOME
-dates <- c(replicate(8, "April 23-May 5"), replicate(8, "May 7-12"), replicate(8, "May 14-19"), replicate(8, "May 21-26"), replicate(8, "May 28-June 2"), replicate(8, "June 4-9"), replicate(8, "June 11-16"), replicate(8, "June 18-23"), replicate(8, "June 25-30"), replicate(8, "July 2-7"), replicate(8, "July 9-14"), replicate(8, "July 16-21"), replicate(8, "August 19-31"), replicate(8, "September 2-14"), replicate(8, "September 16-28"), replicate(8, "September 30-October 12"), replicate(8, "October14-26"), replicate(8, "October 28-November 9"), replicate(8, "November 11-23"), replicate(8, "November 25-December 7"), replicate(8, "December 9-21"))
+dates <- c(replicate(8, "Week 01"), replicate(8, "Week 02"), replicate(8, "Week 03"), replicate(8, "Week 04"), replicate(8, "Week 05"), replicate(8, "Week 06"), replicate(8, "Week 07"), replicate(8, "Week 08"), replicate(8, "Week 09"), replicate(8, "Week 10"), replicate(8, "Week 11"), replicate(8, "Week 12"), replicate(8, "Week 13"), replicate(8, "Week 14"), replicate(8, "Week 15"), replicate(8, "Week 16"), replicate(8, "Week 17"), replicate(8, "Week 18"), replicate(8, "Week 19"), replicate(8, "Week 20"), replicate(8, "Week 21"))
 
 incomes <- c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above")
 
@@ -328,14 +338,21 @@ Percent_Food_Sufficiency$Income <- incomes
 Percent_Food_Sufficiency$Income <- factor(Percent_Food_Sufficiency$Income, levels = c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above"))
 
 
-ggplot(Percent_Food_Sufficiency, aes(x=Date, y=Percent_Food_Sufficiency, group=Income)) + geom_line(aes(color=Income)) + geom_point(aes(color=Income)) + labs(title = "Percent often not enough to eat in the last 7 days by iIncome", x = "Date (April 2020 - December 2020)", y = " ")
+ggplot(Percent_Food_Sufficiency, aes(x=Date, y=Percent_Food_Sufficiency, group=Income)) + geom_line(aes(color=Income)) + geom_point(aes(color=Income)) + labs(title = "Percent often not enough to eat in the last 7 days by income", x = "Date (April 2020 - December 2020)", y = " ")
 
 ```
 
 
 
 
-## Housing Insecurity: No confidence in the ability to pay next month's mortgage or rent by demographics.
+# Housing Insecurity: No confidence in the ability to pay next month's mortgage or rent by demographics.
+
+As we all likely remember, the COVID-19 eviction crisis dominated the news for quite some time and there were a number of national and local eviction moratorium extensions. Houston has had more eviction filings since March 15, 2020 than at least 29 other large metropolitan areas in the country. According to Princeton University’s Eviction Lab, Houston has had nearly 82,000 eviction filings since March 2020 second only to New York City and for the week of April 11 of this year, Houston had the MOST eviction filings compared to the other 30 cities being tracked.
+
+On average in 2020, 24% of individuals with less than a high school diploma had no confidence in their ability to pay their rent or mortgage next month compared to 3% of individuals with at least a bachelor’s degree.
+
+We see a similar disparity in household income with 18% of individuals with a household income less than $25,000 having no confidence compared to 2% of individuals with a household income of $75,000 or more
+
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=18, fig.height=4}
 library(ggplot2)
@@ -344,7 +361,7 @@ library(dplyr)
 L <- list.files(".", ".csv")
 
 ###EDUCATION
-dates <- c(replicate(7, "April 23-May 5"), replicate(7, "May 7-12"), replicate(7, "May 14-19"), replicate(7, "May 21-26"), replicate(7, "May 28-June 2"), replicate(7, "June 4-9"), replicate(7, "June 11-16"), replicate(7, "June 18-23"), replicate(7, "June 25-30"), replicate(7, "July 2-7"), replicate(7, "July 9-14"), replicate(7, "July 16-21"), replicate(7, "August 19-31"), replicate(7, "September 2-14"), replicate(7, "September 16-28"), replicate(7, "September 30-October 12"), replicate(7, "October14-26"), replicate(7, "October 28-November 9"), replicate(7, "November 11-23"), replicate(7, "November 25-December 7"), replicate(7, "December 9-21"))
+dates <- c(replicate(7, "Week 01"), replicate(7, "Week 02"), replicate(7, "Week 03"), replicate(7, "Week 04"), replicate(7, "Week 05"), replicate(7, "Week 06"), replicate(7, "Week 07"), replicate(7, "Week 08"), replicate(7, "Week 09"), replicate(7, "Week 10"), replicate(7, "Week 11"), replicate(7, "Week 12"), replicate(7, "Week 13"), replicate(7, "Week 14"), replicate(7, "Week 15"), replicate(7, "Week 16"), replicate(7, "Week 17"), replicate(7, "Week 18"), replicate(7, "Week 19"), replicate(7, "Week 20"), replicate(7, "Week 21"))
 
 education <- c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree")
 
@@ -378,7 +395,7 @@ Percent_Housing_ed$Education <- factor(Percent_Housing_ed$Education, levels = c(
 ggplot(Percent_Housing_ed, aes(x=Date, y=Percent_Housing_ed, group=Education)) + geom_line(aes(color=Education)) + geom_point(aes(color=Education)) + labs(title = "Percent no confidence in ability to pay next month's mortgage or rent by education", x = "Date (April 2020 - December 2020)", y = " ")
 
 ###INCOME
-dates <- c(replicate(8, "April 23-May 5"), replicate(8, "May 7-12"), replicate(8, "May 14-19"), replicate(8, "May 21-26"), replicate(8, "May 28-June 2"), replicate(8, "June 4-9"), replicate(8, "June 11-16"), replicate(8, "June 18-23"), replicate(8, "June 25-30"), replicate(8, "July 2-7"), replicate(8, "July 9-14"), replicate(8, "July 16-21"), replicate(8, "August 19-31"), replicate(8, "September 2-14"), replicate(8, "September 16-28"), replicate(8, "September 30-October 12"), replicate(8, "October14-26"), replicate(8, "October 28-November 9"), replicate(8, "November 11-23"), replicate(8, "November 25-December 7"), replicate(8, "December 9-21"))
+dates <- c(replicate(8, "Week 01"), replicate(8, "Week 02"), replicate(8, "Week 03"), replicate(8, "Week 04"), replicate(8, "Week 05"), replicate(8, "Week 06"), replicate(8, "Week 07"), replicate(8, "Week 08"), replicate(8, "Week 09"), replicate(8, "Week 10"), replicate(8, "Week 11"), replicate(8, "Week 12"), replicate(8, "Week 13"), replicate(8, "Week 14"), replicate(8, "Week 15"), replicate(8, "Week 16"), replicate(8, "Week 17"), replicate(8, "Week 18"), replicate(8, "Week 19"), replicate(8, "Week 20"), replicate(8, "Week 21"))
 
 incomes <- c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above")
 
@@ -415,7 +432,12 @@ ggplot(Percent_Housing, aes(x=Date, y=Percent_Housing, group=Income)) + geom_lin
 ```
 
 
-## Mental Health Impacts: Feeling nervous, anxious, or on edge nearly every day for the last 7 days by demographics.
+# Mental Health Impacts: Feeling nervous, anxious, or on edge nearly every day for the last 7 days by demographics.
+
+The social isolation that came with the COVID-19 pandemic had a negative impact on many people’s mental health. Although, the additional stressors such as loss of employment and concerns with food insufficiency and housing insecurity likely caused an even greater amount of distress, such as feelings of anxiousness, for certain individuals.
+
+On average, 16% of individuals with at least a bachelor's degree reported feeling nervous, anxious, or on edge nearly every day for the last week compared to 24% of individuals with less than a high school diploma and 14% of individuals with a household income of more than $75,000 reported the same frequency of these feelings compared to 26% of individuals with a household income of less than $25,000
+
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=18, fig.height=4}
 library(ggplot2)
@@ -425,7 +447,7 @@ L <- list.files(".", ".csv")
 
 
 ###EDUCATION
-dates <- c(replicate(7, "April 23-May 5"), replicate(7, "May 7-12"), replicate(7, "May 14-19"), replicate(7, "May 21-26"), replicate(7, "May 28-June 2"), replicate(7, "June 4-9"), replicate(7, "June 11-16"), replicate(7, "June 18-23"), replicate(7, "June 25-30"), replicate(7, "July 2-7"), replicate(7, "July 9-14"), replicate(7, "July 16-21"), replicate(7, "August 19-31"), replicate(7, "September 2-14"), replicate(7, "September 16-28"), replicate(7, "September 30-October 12"), replicate(7, "October14-26"), replicate(7, "October 28-November 9"), replicate(7, "November 11-23"), replicate(7, "November 25-December 7"), replicate(7, "December 9-21"))
+dates <- c(replicate(7, "Week 01"), replicate(7, "Week 02"), replicate(7, "Week 03"), replicate(7, "Week 04"), replicate(7, "Week 05"), replicate(7, "Week 06"), replicate(7, "Week 07"), replicate(7, "Week 08"), replicate(7, "Week 09"), replicate(7, "Week 10"), replicate(7, "Week 11"), replicate(7, "Week 12"), replicate(7, "Week 13"), replicate(7, "Week 14"), replicate(7, "Week 15"), replicate(7, "Week 16"), replicate(7, "Week 17"), replicate(7, "Week 18"), replicate(7, "Week 19"), replicate(7, "Week 20"), replicate(7, "Week 21"))
 
 education <- c("Less than high school", "Some high school", "High School graduate or equivalent", "Some college, no degree received", "Associate's degree", "Bachelor's degree", "Graduate degree")
 
@@ -459,7 +481,7 @@ Percent_Anxious_ed$Education <- factor(Percent_Anxious_ed$Education, levels = c(
 ggplot(Percent_Anxious_ed, aes(x=Date, y=Percent_Anxious_ed, group=Education)) + geom_line(aes(color=Education)) + geom_point(aes(color=Education)) + labs(title = "Percent feeling nervous, anxious, or on edge nearly every day for the last 7 days by education", x = "Date (April 2020 - December 2020)", y = " ")
 
 ###INCOME
-dates <- c(replicate(8, "April 23-May 5"), replicate(8, "May 7-12"), replicate(8, "May 14-19"), replicate(8, "May 21-26"), replicate(8, "May 28-June 2"), replicate(8, "June 4-9"), replicate(8, "June 11-16"), replicate(8, "June 18-23"), replicate(8, "June 25-30"), replicate(8, "July 2-7"), replicate(8, "July 9-14"), replicate(8, "July 16-21"), replicate(8, "August 19-31"), replicate(8, "September 2-14"), replicate(8, "September 16-28"), replicate(8, "September 30-October 12"), replicate(8, "October14-26"), replicate(8, "October 28-November 9"), replicate(8, "November 11-23"), replicate(8, "November 25-December 7"), replicate(8, "December 9-21"))
+dates <- c(replicate(8, "Week 01"), replicate(8, "Week 02"), replicate(8, "Week 03"), replicate(8, "Week 04"), replicate(8, "Week 05"), replicate(8, "Week 06"), replicate(8, "Week 07"), replicate(8, "Week 08"), replicate(8, "Week 09"), replicate(8, "Week 10"), replicate(8, "Week 11"), replicate(8, "Week 12"), replicate(8, "Week 13"), replicate(8, "Week 14"), replicate(8, "Week 15"), replicate(8, "Week 16"), replicate(8, "Week 17"), replicate(8, "Week 18"), replicate(8, "Week 19"), replicate(8, "Week 20"), replicate(8, "Week 21"))
 
 incomes <- c("Less than $25,000", "$25,000 - $34,999", "$35,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 and Above")
 
@@ -497,15 +519,13 @@ ggplot(Percent_Anxious, aes(x=Date, y=Percent_Anxious, group=Income)) + geom_lin
 ```
 
 
-## Has COVID-19 Had A Disproportionate Impact In Our Region?
+# Has COVID-19 Had A Disproportionate Impact In Our Region?
 
-- Given the limited scope - somewhat
-- Of the two SVI characteristics looked at individuals with less education and lower income had disproportionate experiences with:
-  - Employment income loss
-  - Food Insufficiency
-  - Housing Insecurity
-  - Feelings of Anxiousness
-- High SVI areas tend to have higher rates of COVID-19 deaths
+So, has COVID-19 had a disproportionate impact in our region?
 
+Well, this is clearly not nearly comprehensive enough to make a definitive statement on whether or not the COVID-19 pandemic has had a disproportionate impact across the board for all of the previous mentioned populations that are typically disproportionately impacted by disasters, we can still, based off of this limited scope, posit that some members of our community experienced a substantially more negative impact caused by COVID-19 when it comes to employment income loss, food insufficiency, housing insecurity and feelings of anxiousness. And, we can likely argue that certain geographic areas that are historically more vulnerable to the impacts of disasters are experiencing higher rates of COVID-19 deaths.
 
+Disasters whether they’re natural, man-made, or hybrid do not impact everyone the same. They don’t necessarily create the inequities we see in datasets such as these but rather exacerbate pre-existing inequities caused by a complex local, state, and national history of intentional disinvestment in certain communities. Just as our ability to recover from a disease depends on our overall health before contracting it, a community’s ability to respond to and recover from a disaster requires economic, demographic, and social health before the disaster strikes. 
+
+Disasters are not going anywhere anytime soon and in fact they are only getting worse. If we want to make our region disaster ready and disaster resilient we need to understand which communities need extra assistance and investment so we can do better to strengthen these communities before the next disaster.
 
