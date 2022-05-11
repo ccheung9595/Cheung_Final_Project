@@ -74,13 +74,13 @@ library(tigris)
 
 ###SVI Mapping
 
-svi_dir <- "COVID Maps/tl_2019_48_tract.shp"
+svi_dir <- "COVID Map/tl_2019_48_tract.shp"
 svi <- readOGR(svi_dir, verbose = FALSE)
 new_crs <- '+init=epsg:4326'
 svi_projected <- spTransform(svi, CRS(new_crs))
 
 
-svi_data <- read.csv("COVID Maps/Texas.csv")
+svi_data <- read.csv("COVID Map/Texas.csv")
 svi_data <- svi_data %>% filter(RPL_THEMES != -999)
 svi_data <- svi_data %>% filter(COUNTY == "Harris")
 
@@ -107,11 +107,11 @@ leaflet() %>%
 
 
 ###COVID Mapping
-zipcode_dir <- "COVID Maps/harris-county-tx-zipcodes.shp"
+zipcode_dir <- "COVID Map/harris-county-tx-zipcodes.shp"
 zipcode <- readOGR(zipcode_dir, verbose = FALSE)
 zipcode_projected <- spTransform(zipcode, CRS(new_crs))
 
-COVID_cases <- read.csv("COVID Maps/COVID-19 Active Cases Data by Zip Code_as of 4.24.22.csv")
+COVID_cases <- read.csv("COVID Map/COVID-19 Active Cases Data by Zip Code_as of 4.24.22.csv")
 
 COVID_cases <- COVID_cases %>%
   filter(Total.Population !=0) %>%
