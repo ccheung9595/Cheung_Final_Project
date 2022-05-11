@@ -39,7 +39,6 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.show="hold", out.width="50%"}
-setwd("C:/Users/ccheung/OneDrive - Greater Houston Community Foundation/Desktop/Chelsea - R/Final Project")
 
 
 library(leaflet)
